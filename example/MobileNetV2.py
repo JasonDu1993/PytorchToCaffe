@@ -1,6 +1,5 @@
-
-#From https://github.com/tonylins/pytorch-mobilenet-v2
-#model https://drive.google.com/open?id=1jlto6HRVD3ipNkAl1lNhDbkBp7HylaqR
+# From https://github.com/tonylins/pytorch-mobilenet-v2
+# model https://drive.google.com/open?id=1jlto6HRVD3ipNkAl1lNhDbkBp7HylaqR
 import torch.nn as nn
 import math
 

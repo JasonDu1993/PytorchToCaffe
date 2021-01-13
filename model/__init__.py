@@ -4,6 +4,7 @@ from importlib import import_module
 import torch
 import torch.nn as nn
 
+
 class Model(nn.Module):
     def __init__(self, args, ckpt):
         super(Model, self).__init__()
@@ -27,7 +28,6 @@ class Model(nn.Module):
         )
         print(self.model, file=ckpt.log_file)
 
-
     def forward(self, x):
         return self.model(x)
 
@@ -40,7 +40,7 @@ class Model(nn.Module):
     def save(self, apath, epoch, is_best=False):
         target = self.get_model()
         torch.save(
-            target.state_dict(), 
+            target.state_dict(),
             os.path.join(apath, 'model', 'model_latest.pt')
         )
         if is_best:
@@ -48,7 +48,7 @@ class Model(nn.Module):
                 target.state_dict(),
                 os.path.join(apath, 'model', 'model_best.pt')
             )
-        
+
         if self.save_models:
             torch.save(
                 target.state_dict(),

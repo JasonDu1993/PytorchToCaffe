@@ -1,6 +1,7 @@
 # 2018.09.06 by Shining 
 import sys
-sys.path.insert(0,'/home/shining/Projects/github-projects/caffe-project/caffe/python')
+
+sys.path.insert(0, '/home/shining/Projects/github-projects/caffe-project/caffe/python')
 import caffe
 import torchvision.transforms as transforms
 import numpy as np
@@ -12,11 +13,10 @@ from torch.nn.parameter import Parameter
 from torchvision.models import resnet
 import time
 
-
-
 import cv2
 
-#caffe load formate
+
+# caffe load formate
 def load_image_caffe(imgfile):
     image = caffe.io.load_image(imgfile)
     transformer = caffe.io.Transformer({'data': (1, 3, args.height, args.width)})
@@ -29,8 +29,8 @@ def load_image_caffe(imgfile):
     image = image.reshape(1, 3, args.height, args.width)
     return image
 
+
 def load_image_pytorch(imgfile):
-    
     # normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
     #                                  std=[0.229, 0.224, 0.225])
     # # transforms.ToTensor()
@@ -45,14 +45,13 @@ def load_image_pytorch(imgfile):
     # img1 = transform1(img) # 归一化到 [0.0,1.0]
     # print("img1 = ",img1)
 
-    img = np.ones([1,3,args.height, args.width])
+    img = np.ones([1, 3, args.height, args.width])
     # 转化为numpy.ndarray并显示
     return img
 
 
-
 def forward_pytorch(weightfile, image):
-    net=resnet.resnet18()
+    net = resnet.resnet18()
     checkpoint = torch.load(weightfile)
     net.load_state_dict(checkpoint)
     if args.cuda:
@@ -66,9 +65,10 @@ def forward_pytorch(weightfile, image):
         image = Variable(image)
     t0 = time.time()
     blobs = net.forward(image)
-    #print(blobs.data.numpy().flatten())
+    # print(blobs.data.numpy().flatten())
     t1 = time.time()
-    return t1-t0, blobs, net.parameters()
+    return t1 - t0, blobs, net.parameters()
+
 
 # Reference from:
 def forward_caffe(protofile, weightfile, image):
@@ -83,14 +83,22 @@ def forward_caffe(protofile, weightfile, image):
     t0 = time.time()
     output = net.forward()
     t1 = time.time()
-    return t1-t0, net.blobs, net.params
+    return t1 - t0, net.blobs, net.params
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='convert caffe to pytorch')
-    parser.add_argument('--protofile', default='/home/shining/Projects/github-projects/pytorch-project/nn_tools/MGN.prototxt', type=str)
-    parser.add_argument('--weightfile', default='/home/shining/Projects/github-projects/pytorch-project/nn_tools/MGN.caffemodel', type=str)
-    parser.add_argument('--model', default="/home/shining/Projects/github-projects/pytorch-project/nn_tools/model_100.pt", type=str)
-    parser.add_argument('--imgfile', default='/home/shining/Projects/github-projects/pytorch-project/nn_tools/001763.jpg', type=str)
+    parser.add_argument('--protofile',
+                        default='/home/shining/Projects/github-projects/pytorch-project/nn_tools/MGN.prototxt',
+                        type=str)
+    parser.add_argument('--weightfile',
+                        default='/home/shining/Projects/github-projects/pytorch-project/nn_tools/MGN.caffemodel',
+                        type=str)
+    parser.add_argument('--model',
+                        default="/home/shining/Projects/github-projects/pytorch-project/nn_tools/model_100.pt",
+                        type=str)
+    parser.add_argument('--imgfile',
+                        default='/home/shining/Projects/github-projects/pytorch-project/nn_tools/001763.jpg', type=str)
     parser.add_argument('--height', default=384, type=int)
     parser.add_argument('--width', default=128, type=int)
     parser.add_argument('--meanB', default=104, type=float)
@@ -102,19 +110,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     print(args)
-    
-    
+
     protofile = args.protofile
     weightfile = args.weightfile
     imgfile = args.imgfile
 
     image = load_image_pytorch(imgfile)
-    time_pytorch, pytorch_blobs, pytorch_models,out_Tensor_pytorch = forward_pytorch(args.model, image)
-    time_caffe, caffe_blobs, caffe_params,out_Tensor_caffe = forward_caffe(protofile, weightfile, image)
+    time_pytorch, pytorch_blobs, pytorch_models, out_Tensor_pytorch = forward_pytorch(args.model, image)
+    time_caffe, caffe_blobs, caffe_params, out_Tensor_caffe = forward_caffe(protofile, weightfile, image)
 
     print('pytorch forward time %d', time_pytorch)
     print('caffe forward time %d', time_caffe)
-    
+
     print('------------ Output Difference ------------')
     blob_name = "cat_blob1"
     if args.cuda:
@@ -123,4 +130,5 @@ if __name__ == '__main__':
         pytorch_data = pytorch_blobs.data.numpy().flatten()
     caffe_data = caffe_blobs[blob_name].data[0][...].flatten()
     diff = abs(pytorch_data - caffe_data).sum()
-    print('%-30s pytorch_shape: %-20s caffe_shape: %-20s output_diff: %f' % (blob_name, pytorch_data.shape, caffe_data.shape, diff/pytorch_data.size))
+    print('%-30s pytorch_shape: %-20s caffe_shape: %-20s output_diff: %f' % (
+    blob_name, pytorch_data.shape, caffe_data.shape, diff / pytorch_data.size))
